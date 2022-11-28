@@ -1,11 +1,10 @@
 import { REST } from "discord.js";
 import { Routes } from "discord.js";
 import config from "./config";
-import { SlashCommandBuilder } from "discord.js";
 import * as commandsModules from "./commands"
 
 type Command = {
-   data: SlashCommandBuilder
+   data:unknown
 };
 
 const commands = [];
