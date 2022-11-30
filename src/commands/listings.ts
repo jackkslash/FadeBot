@@ -1,10 +1,16 @@
 import { CommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js"
 import fetch from "node-fetch";
+import { type } from "os";
+import { listings } from ".";
 import config from "../config";
 
+type listing = { tokenId: any; name: any; imageUrl: any; price: any; }
+
+
+
 export const data = new SlashCommandBuilder()
-    .setName("collection")
-    .setDescription("reply collection")
+    .setName("listings")
+    .setDescription("reply current listings")
     .addStringOption(option =>
         option.setName('collection')
             .setDescription('Name of collection'));
@@ -21,7 +27,7 @@ export async function execute(interaction: CommandInteraction) {
             "x-rapidapi-key": config.RAPIDAPI
         },
         body: JSON.stringify({
-            "url": "https://core-api.prod.blur.io/v1/collections/" + test?.value,
+            "url": "https://core-api.prod.blur.io/v1/collections/" + test?.value + "/tokens?filters=%7B%22traits%22%3A%5B%5D%2C%22hasAsks%22%3Atrue%7D",
             "headers": [
                 "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:108.0) Gecko/20100101 Firefox/108.0",
                 "Accept: */*",
@@ -40,18 +46,24 @@ export async function execute(interaction: CommandInteraction) {
         })
     });
 
+    const listed: any = [];
+
     req.then((res) => res.json()).then((json) => {
         const colBody = JSON.parse(json.body);
 
-        const embed = new EmbedBuilder()
-                    .setTitle(colBody.collection.name)
-                    .setDescription(colBody.collection.collectionSlug)
-                    .setURL('https://blur.io/collection/'+colBody.collection.collectionSlug)
-                    .setAuthor({ name: colBody.collection.name, iconURL: colBody.collection.imageUrl, url: 'https://blur.io/collection/'+colBody.collection.collectionSlug})
-
-        console.log(colBody)
+        colBody.tokens.map((t: listing) => {
+            const listing: listing = {
+                tokenId: t.tokenId,
+                name: t.name,
+                imageUrl: t.imageUrl,
+                price: t.price,
+            }
+            listed.push(listing);
+        })
+        listed.splice(4)
+        console.log(listed)
         //if 404
-        return interaction.reply({embeds: [embed]})
+        return interaction.reply(colBody.contractAddress)
         // return interaction.reply("test")
     })
 }
