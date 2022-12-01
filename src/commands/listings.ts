@@ -4,7 +4,9 @@ import { type } from "os";
 import { listings } from ".";
 import config from "../config";
 
-type listing = { tokenId: any; name: any; imageUrl: any; price: any; }
+type listing = { 
+    tokenId: number; name: string; imageUrl: string; price: object; 
+}
 
 
 
@@ -50,20 +52,23 @@ export async function execute(interaction: CommandInteraction) {
 
     req.then((res) => res.json()).then((json) => {
         const colBody = JSON.parse(json.body);
-
-        colBody.tokens.map((t: listing) => {
-            const listing: listing = {
-                tokenId: t.tokenId,
-                name: t.name,
-                imageUrl: t.imageUrl,
-                price: t.price,
-            }
-            listed.push(listing);
-        })
-        listed.splice(4)
-        console.log(listed)
-        //if 404
-        return interaction.reply(colBody.contractAddress)
-        // return interaction.reply("test")
+        if(!colBody.statusCode){
+            colBody.tokens.map((t: listing) => {
+                const listing: listing = {
+                    tokenId: t.tokenId,
+                    name: t.name,
+                    imageUrl: t.imageUrl,
+                    price: t.price,
+                }
+                listed.push(listing);
+            })
+            listed.splice(4)
+            console.log(listed)
+            //if 404
+            return interaction.reply(colBody.contractAddress)
+        }else{
+            return interaction.reply(colBody.message)
+        }
+       
     })
 }

@@ -42,16 +42,21 @@ export async function execute(interaction: CommandInteraction) {
 
     req.then((res) => res.json()).then((json) => {
         const colBody = JSON.parse(json.body);
+        if (!colBody.statusCode) {
+            const embed = new EmbedBuilder()
+                .setTitle(colBody.collection.name)
+                .setDescription(colBody.collection.collectionSlug)
+                .setURL('https://blur.io/collection/' + colBody.collection.collectionSlug)
+                .setAuthor({ name: colBody.collection.name, iconURL: colBody.collection.imageUrl, url: 'https://blur.io/collection/' + colBody.collection.collectionSlug })
 
-        const embed = new EmbedBuilder()
-                    .setTitle(colBody.collection.name)
-                    .setDescription(colBody.collection.collectionSlug)
-                    .setURL('https://blur.io/collection/'+colBody.collection.collectionSlug)
-                    .setAuthor({ name: colBody.collection.name, iconURL: colBody.collection.imageUrl, url: 'https://blur.io/collection/'+colBody.collection.collectionSlug})
+            console.log(colBody)
 
-        console.log(colBody)
-        //if 404
-        return interaction.reply({embeds: [embed]})
-        // return interaction.reply("test")
+            return interaction.reply({ embeds: [embed] })
+        }else{
+            const embed = new EmbedBuilder()
+            .setTitle(colBody.message)
+            
+            return interaction.reply({ embeds: [embed] })
+        }
     })
 }
