@@ -7,11 +7,12 @@ export const data = new SlashCommandBuilder()
     .setDescription("reply collection")
     .addStringOption(option =>
         option.setName('collection')
-            .setDescription('Name of collection'));
+            .setDescription('Name of collection')
+            .setRequired(true))
 
 export async function execute(interaction: CommandInteraction) {
-    const test = interaction.options.get("collection");
-    console.log(test?.value)
+    const col = interaction.options.get("collection");
+    console.log(col?.value)
     let req = fetch('https://scrapeninja.p.rapidapi.com/scrape', {
         method: 'POST',
         headers:
@@ -21,7 +22,7 @@ export async function execute(interaction: CommandInteraction) {
             "x-rapidapi-key": config.RAPIDAPI
         },
         body: JSON.stringify({
-            "url": "https://core-api.prod.blur.io/v1/collections/" + test?.value,
+            "url": "https://core-api.prod.blur.io/v1/collections/" + col?.value,
             "headers": [
                 "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:108.0) Gecko/20100101 Firefox/108.0",
                 "Accept: */*",

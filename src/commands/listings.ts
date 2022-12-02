@@ -1,7 +1,5 @@
 import { CommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js"
 import fetch from "node-fetch";
-import { type } from "os";
-import { listings } from ".";
 import config from "../config";
 
 type listing = { 
@@ -15,11 +13,16 @@ export const data = new SlashCommandBuilder()
     .setDescription("reply current listings")
     .addStringOption(option =>
         option.setName('collection')
-            .setDescription('Name of collection'));
+            .setDescription('Name of collection')
+            .setRequired(true))
+    .addStringOption(option => 
+        option.setName("amount")
+            .setDescription("Amount of NFTs to return"));
 
 export async function execute(interaction: CommandInteraction) {
-    const test = interaction.options.get("collection");
-    console.log(test?.value)
+    const col = interaction.options.get("collection");
+    const amount = interaction.options.get("amount");
+    console.log(col?.value)
     let req = fetch('https://scrapeninja.p.rapidapi.com/scrape', {
         method: 'POST',
         headers:
@@ -29,7 +32,7 @@ export async function execute(interaction: CommandInteraction) {
             "x-rapidapi-key": config.RAPIDAPI
         },
         body: JSON.stringify({
-            "url": "https://core-api.prod.blur.io/v1/collections/" + test?.value + "/tokens?filters=%7B%22traits%22%3A%5B%5D%2C%22hasAsks%22%3Atrue%7D",
+            "url": "https://core-api.prod.blur.io/v1/collections/" + col?.value + "/tokens?filters=%7B%22traits%22%3A%5B%5D%2C%22hasAsks%22%3Atrue%7D",
             "headers": [
                 "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:108.0) Gecko/20100101 Firefox/108.0",
                 "Accept: */*",
@@ -62,9 +65,11 @@ export async function execute(interaction: CommandInteraction) {
                 }
                 listed.push(listing);
             })
-            listed.splice(4)
-            console.log(listed)
-            //if 404
+            if(amount == null){
+                listed.splice(5)
+            }else{
+                listed.splice(amount?.value)
+            }
             return interaction.reply(colBody.contractAddress)
         }else{
             return interaction.reply(colBody.message)
