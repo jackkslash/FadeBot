@@ -2,12 +2,6 @@ import { CommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.j
 import fetch from "node-fetch";
 import config from "../config";
 
-type listing = { 
-    tokenId: number; name: string; imageUrl: string; price: object; 
-}
-
-
-
 export const data = new SlashCommandBuilder()
     .setName("listings")
     .setDescription("reply current listings")
