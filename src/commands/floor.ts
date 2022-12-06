@@ -3,19 +3,15 @@ import fetch from "node-fetch";
 import config from "../config";
 
 export const data = new SlashCommandBuilder()
-    .setName("listings")
-    .setDescription("reply current listings")
+    .setName("floor")
+    .setDescription("reply floor/bid")
     .addStringOption(option =>
         option.setName('collection')
             .setDescription('Name of collection')
             .setRequired(true))
-    .addStringOption(option => 
-        option.setName("amount")
-            .setDescription("Amount of NFTs to return"));
 
 export async function execute(interaction: CommandInteraction) {
     const col = interaction.options.get("collection");
-    const amount = interaction.options.get("amount");
     console.log(col?.value)
     let req = fetch('https://scrapeninja.p.rapidapi.com/scrape', {
         method: 'POST',
@@ -26,7 +22,7 @@ export async function execute(interaction: CommandInteraction) {
             "x-rapidapi-key": config.RAPIDAPI
         },
         body: JSON.stringify({
-            "url": "https://core-api.prod.blur.io/v1/collections/" + col?.value + "/tokens?filters=%7B%22traits%22%3A%5B%5D%2C%22hasAsks%22%3Atrue%7D",
+            "url": "https://core-api.prod.blur.io/v1/collections/" + col?.value,
             "headers": [
                 "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:108.0) Gecko/20100101 Firefox/108.0",
                 "Accept: */*",
@@ -45,32 +41,19 @@ export async function execute(interaction: CommandInteraction) {
         })
     });
 
-    const listed: any = [];
     req.then((res) => res.json()).then((json) => {
+        console.log(json)
         const colBody = JSON.parse(json.body);
-        if(!colBody.statusCode){
-            colBody.tokens.map((t: listing) => {
-                const listing: listing = {
-                    tokenId: t.tokenId,
-                    name: t.name,
-                    imageUrl: t.imageUrl,
-                    price: t.price,
-                }
-                listed.push(listing);
-            })
-            if(amount == null){
-                listed.splice(5)
-            }else{
-                listed.splice(amount?.value)
-            }
-            return interaction.reply(colBody.contractAddress)
-        }else{
-            return interaction.reply(colBody.message)
-        }
-       
-    })
-}
+        let reply:string ="";
+        console.log(colBody)
+        if (!colBody.statusCode) {
+            
+            let reply = "Floor: "+ colBody.collection.floorPrice.amount + " " + colBody.collection.floorPrice.unit + ", Bid Floor: " + colBody.collection.bestCollectionBid;
 
-type listing = {
-    tokenId: number; name: string; imageUrl: string; price: object;
+        }else{
+            const reply = colBody.message;
+            
+        }
+        return interaction.reply(reply)
+    })
 }
